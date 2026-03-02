@@ -1,4 +1,2 @@
 Tautan Docker Hub:
 https://hub.docker.com/r/dwiahmadd/auto-mpg-model
-
-Ganti YOUR_DOCKER_USERNAME dengan username Docker Hub Anda.
