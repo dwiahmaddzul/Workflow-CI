@@ -49,7 +49,6 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     needs: train-model
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout repository
@@ -69,20 +68,19 @@ jobs:
       run: |
         python modelling.py --n_estimators 100 --max_depth 10
 
-    - name: Find latest model run
+    - name: Find latest model path
       id: find_run
       working-directory: MLProject
       run: |
-        LATEST_RUN=$(ls -td mlruns/*/run-* 2>/dev/null | head -1 || true)
-        if [ -z "$LATEST_RUN" ]; then
-          EXPERIMENT_ID=$(ls mlruns/ | grep -v trash | head -1)
-          RUN_ID=$(ls -t mlruns/$EXPERIMENT_ID/ | grep -v meta | head -1)
-          MODEL_URI="mlruns/$EXPERIMENT_ID/$RUN_ID/artifacts/model"
-        else
-          MODEL_URI="$LATEST_RUN/artifacts/model"
+        # Find the actual model directory
+        MODEL_PATH=$(find mlruns -type d -name "model" -path "*/artifacts/model" | head -1)
+        if [ -z "$MODEL_PATH" ]; then
+          echo "ERROR: Model not found!"
+          find mlruns -type d | head -20
+          exit 1
         fi
-        echo "model_uri=$MODEL_URI" >> $GITHUB_OUTPUT
-        echo "Found model at: $MODEL_URI"
+        echo "model_uri=$MODEL_PATH" >> $GITHUB_OUTPUT
+        echo "Found model at: $MODEL_PATH"
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
