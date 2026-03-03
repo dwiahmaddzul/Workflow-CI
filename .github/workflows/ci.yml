@@ -28,7 +28,7 @@ jobs:
     - name: Run MLflow Project
       working-directory: MLProject
       run: |
-        python modelling.py --n_estimators 100 --max_depth 10
+        mlflow run . -P n_estimators=100 -P max_depth=10 --env-manager=local
 
     - name: Upload MLflow artifacts
       uses: actions/upload-artifact@v4
@@ -59,20 +59,19 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Install MLflow
+    - name: Install dependencies
       run: |
         pip install mlflow==2.19.0 scikit-learn pandas numpy matplotlib
 
-    - name: Train model for Docker
+    - name: Run MLflow Project for Docker
       working-directory: MLProject
       run: |
-        python modelling.py --n_estimators 100 --max_depth 10
+        mlflow run . -P n_estimators=100 -P max_depth=10 --env-manager=local
 
     - name: Find latest model path
       id: find_run
       working-directory: MLProject
       run: |
-        # Find the actual model directory
         MODEL_PATH=$(find mlruns -type d -name "model" -path "*/artifacts/model" | head -1)
         if [ -z "$MODEL_PATH" ]; then
           echo "ERROR: Model not found!"
